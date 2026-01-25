@@ -1,0 +1,14 @@
+{
+  "name": "corbidev/theme-kernel",
+  "description": "CorbiDev Theme Kernel – shared technical core for CorbiDev WordPress themes.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "CorbiDev\\Theme\\": "src/"
+    }
+  }
+}
