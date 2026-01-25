@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Script minimal de scan anti-régression pour le Kernel.
+// Objectif : détecter rapidement des usages interdits comme echo, print,
+// var_dump ou des fonctions d’i18n front dans le code du Kernel.
+
+$root = dirname(__DIR__);
+$srcDir = $root . '/src';
+
+$forbiddenPatterns = [
+    '/\becho\b/',
+    '/\bprint\b/',
+    '/\bvar_dump\b/',
+    '/\bprintf\b/',
+    '/\b_s\s*\(/',
+    '/\b__\s*\(/',
+    '/\b_e\s*\(/',
+];
+
+$iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($srcDir, RecursiveDirectoryIterator::SKIP_DOTS)
+);
+
+$errors = [];
+
+/** @var SplFileInfo $file */
+foreach ($iterator as $file) {
+    if ($file->getExtension() !== 'php') {
+        continue;
+    }
+
+    $contents = file_get_contents($file->getPathname());
+    if ($contents === false) {
+        continue;
+    }
+
+    foreach ($forbiddenPatterns as $pattern) {
+        if (preg_match($pattern, $contents) === 1) {
+            $errors[] = $file->getPathname() . ' matches pattern ' . $pattern;
+        }
+    }
+}
+
+if ($errors !== []) {
+    fwrite(STDERR, "CorbiDev Theme Kernel regression scan failed:\n");
+    foreach ($errors as $error) {
+        fwrite(STDERR, ' - ' . $error . PHP_EOL);
+    }
+    exit(1);
+}
+
+fwrite(STDOUT, "CorbiDev Theme Kernel regression scan passed.\n");
+exit(0);

@@ -6,9 +6,16 @@
   "require": {
     "php": ">=8.4"
   },
+"bin": [
+    "bin/corbidev-theme-kernel-export-config"
+],
   "autoload": {
     "psr-4": {
       "CorbiDev\\Theme\\": "src/"
     }
+},
+"scripts": {
+    "kernel:lint": "php -l src/Kernel.php",
+    "kernel:scan-regressions": "php bin/corbidev-theme-kernel-scan-regressions"
   }
 }

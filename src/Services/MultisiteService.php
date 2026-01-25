@@ -8,6 +8,7 @@ use CorbiDev\Theme\Contracts\ServiceInterface;
 use CorbiDev\Theme\Core\ServiceContainer;
 use CorbiDev\Theme\Core\ThemeContext;
 use CorbiDev\Theme\Core\HookRegistry;
+use CorbiDev\Theme\Helpers\WPHelper;
 
 final class MultisiteService implements ServiceInterface
 {
@@ -17,7 +18,7 @@ final class MultisiteService implements ServiceInterface
 
     public function register(): void
     {
-        if (!\function_exists('is_multisite') || !\is_multisite()) {
+        if (!WPHelper::isMultisite()) {
             return;
         }
 
@@ -31,7 +32,13 @@ final class MultisiteService implements ServiceInterface
 
     private function registerMultisiteContext(ThemeContext $themeContext): void
     {
-        if (!\function_exists('get_main_network_id') || !\function_exists('get_main_site_id')) {
+        $mainNetworkId = WPHelper::getMainNetworkId();
+        if ($mainNetworkId === null) {
+            return;
+        }
+
+        $mainSiteId = WPHelper::getMainSiteId($mainNetworkId);
+        if ($mainSiteId === null) {
             return;
         }
 
@@ -42,40 +49,36 @@ final class MultisiteService implements ServiceInterface
             $multisite = [];
         }
 
-        $mainNetworkId = \get_main_network_id();
-        $mainSiteId = \get_main_site_id($mainNetworkId);
-
-        $currentBlogId = \get_current_blog_id();
+        $currentBlogId = WPHelper::getCurrentBlogId();
+        if ($currentBlogId === null) {
+            return;
+        }
 
         $isMainSite = ($currentBlogId === $mainSiteId);
 
-        if (!\has_filter('corbidev_theme_kernel_is_main_site')) {
-            \add_filter('corbidev_theme_kernel_is_main_site', static function (bool $default) use ($isMainSite): bool {
+        if (!WPHelper::hasFilter('corbidev_theme_kernel_is_main_site')) {
+            WPHelper::addFilter('corbidev_theme_kernel_is_main_site', static function (bool $default) use ($isMainSite): bool {
                 return $isMainSite;
             });
         }
 
         $sharedOptionKeys = $multisite['shared_options'] ?? [];
-        if (\is_array($sharedOptionKeys) && $isMainSite && \function_exists('add_action')) {
-            \add_action('update_option', static function (string $option, $oldValue, $value) use ($sharedOptionKeys, $mainSiteId): void {
+        if (\is_array($sharedOptionKeys) && $isMainSite) {
+            WPHelper::addAction('update_option', static function (string $option, $oldValue, $value) use ($sharedOptionKeys, $mainSiteId): void {
                 if (!\in_array($option, $sharedOptionKeys, true)) {
                     return;
                 }
 
-                if (!\function_exists('get_sites') || !\function_exists('switch_to_blog') || !\function_exists('restore_current_blog')) {
-                    return;
-                }
-
-                $sites = \get_sites(['network_id' => \get_main_network_id()]);
+                $sites = WPHelper::getSites(['network_id' => WPHelper::getMainNetworkId() ?? 0]);
 
                 foreach ($sites as $site) {
                     if ((int) $site->blog_id === (int) $mainSiteId) {
                         continue;
                     }
 
-                    \switch_to_blog((int) $site->blog_id);
-                    \update_option($option, $value);
-                    \restore_current_blog();
+                    WPHelper::switchToBlog((int) $site->blog_id);
+                    WPHelper::updateOption($option, $value);
+                    WPHelper::restoreCurrentBlog();
                 }
             }, 10, 3);
         }

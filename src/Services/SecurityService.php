@@ -8,6 +8,7 @@ use CorbiDev\Theme\Contracts\ServiceInterface;
 use CorbiDev\Theme\Core\ServiceContainer;
 use CorbiDev\Theme\Core\ThemeContext;
 use CorbiDev\Theme\Core\HookRegistry;
+use CorbiDev\Theme\Helpers\WPHelper;
 
 final class SecurityService implements ServiceInterface
 {
@@ -37,25 +38,25 @@ final class SecurityService implements ServiceInterface
         $disableXmlRpc = (bool) ($security['disable_xmlrpc'] ?? true);
         $disableUserEnumeration = (bool) ($security['disable_user_enumeration'] ?? true);
 
-        if ($disableXmlRpc && \function_exists('add_filter')) {
-            \add_filter('xmlrpc_enabled', '__return_false');
+        if ($disableXmlRpc) {
+            WPHelper::addFilter('xmlrpc_enabled', '__return_false');
 
-            \add_filter('wp_headers', static function (array $headers): array {
+            WPHelper::addFilter('wp_headers', static function (array $headers): array {
                 unset($headers['X-Pingback']);
 
                 return $headers;
             });
         }
 
-        if ($disableUserEnumeration && \function_exists('add_action') && \function_exists('add_filter')) {
-            \add_filter('rest_endpoints', static function (array $endpoints): array {
+        if ($disableUserEnumeration) {
+            WPHelper::addFilter('rest_endpoints', static function (array $endpoints): array {
                 unset($endpoints['/wp/v2/users'], $endpoints['/wp/v2/users/(?P<id>[\\d]+)']);
 
                 return $endpoints;
             });
 
-            \add_action('pre_get_posts', static function ($query): void {
-                if (!\is_admin() && $query->is_main_query() && $query->is_author()) {
+            WPHelper::addAction('pre_get_posts', static function ($query): void {
+                if (!WPHelper::isAdmin() && $query->is_main_query() && $query->is_author()) {
                     $query->set('author', 0);
                     $query->set('post__in', [0]);
                 }
