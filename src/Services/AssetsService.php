@@ -21,6 +21,15 @@ final class AssetsService implements ServiceInterface
         $hookRegistry = $this->container->getHookRegistry();
         $themeContext = $this->container->getThemeContext();
 
+        $featureFlags = $themeContext->getFeatureFlags();
+
+        // La gestion des assets est strictement opt‑in :
+        // elle n'est active que si le thème déclare explicitement
+        // feature_flags['assets'] = true dans la configuration du Kernel.
+        if (!($featureFlags['assets'] ?? false)) {
+            return;
+        }
+
         $hookRegistry->registerAction('wp_enqueue_scripts', function () use ($themeContext): void {
             $this->enqueueAssets($themeContext);
         });
