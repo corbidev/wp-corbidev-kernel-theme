@@ -24,6 +24,11 @@ final class Kernel
 
     private static ?ServiceContainer $container = null;
 
+    /**
+     * Point d'entrée public du Kernel.
+     *
+     * @api
+     */
     public static function boot(array $config): void
     {
         if (self::$booted) {
@@ -43,6 +48,11 @@ final class Kernel
         self::$booted = true;
     }
 
+    /**
+     * Accès officiel au conteneur de services du Kernel.
+     *
+     * @api
+     */
     public static function getContainer(): ServiceContainer
     {
         if (self::$container === null) {
