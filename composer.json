@@ -1,21 +1,24 @@
 {
-  "name": "corbidev/theme-kernel",
-  "description": "CorbiDev Theme Kernel – shared technical core for CorbiDev WordPress themes.",
-  "type": "library",
-  "license": "MIT",
-  "require": {
-    "php": ">=8.4"
-  },
-"bin": [
-    "bin/corbidev-theme-kernel-export-config"
-],
-  "autoload": {
-    "psr-4": {
-      "CorbiDev\\Theme\\": "src/"
-    }
-},
-"scripts": {
-    "kernel:lint": "php -l src/Kernel.php",
-    "kernel:scan-regressions": "php bin/corbidev-theme-kernel-scan-regressions"
-  }
+    "name": "corbidev/wp-corbidev-kernel-theme",
+    "description": "CorbiDev Theme Kernel – Shared PHP kernel for CorbiDev WordPress themes.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "CorbiDev\\Theme\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/corbidev-kernel"
+    ],
+    "scripts": {
+        "kernel:export-config": [
+            "@php bin/corbidev-kernel export:config"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
