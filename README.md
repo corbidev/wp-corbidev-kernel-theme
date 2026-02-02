@@ -1,1 +1,1 @@
-# wp-corbidev-kernel-theme
+# CorbiDev Kernel\nProduction-ready WordPress Kernel.\n
