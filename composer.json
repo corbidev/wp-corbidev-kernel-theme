@@ -1,7 +1,7 @@
 {
   "name": "corbidev/wp-corbidev-kernel-theme",
   "description": "CorbiDev WordPress Production Kernel with Progressive Loading",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "library",
   "license": "proprietary",
   "autoload": {
